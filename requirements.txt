@@ -1,5 +1,5 @@
 htmlmin
 requests
-requests-cacahe
+requests-cache
 beautifulsoup4
 jinja2
