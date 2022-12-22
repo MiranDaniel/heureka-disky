@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>heureka-disky</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div class="flex flex-row">
+        <fieldset class="border border-slate-300 p-3">
+            <h2 class="font-bold">Interfaces</h2>
+            <div class="flex flex-col gap-0 text-sm">
+                {% for i in interfaces %}
+                <label class="my-0 py-0"><input class="my-0 py-0 interface-sel" value="{{i}}"
+                        type="checkbox">{{i}}</label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <fieldset class="border border-slate-300 p-3">
+            <h2 class="font-bold">RPM</h2>
+            <div class="flex flex-col gap-0 text-sm">
+                {% for i in speed %}
+                <label class="my-0 py-0"><input class="my-0 py-0 rpm-sel" value="{{i}}" type="checkbox">{{i}}</label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <fieldset class="border border-slate-300 p-3">
+            <h2 class="font-bold">Capacity (TB)</h2>
+            <div class="flex flex-col gap-0 text-sm">
+                <input class="border" type="number" name="max" id="max" placeholder="Max capacity (TB)">
+                <input class="border" type="number" name="min" id="min" placeholder="Min capacity (TB)">
+            </div>
+        </fieldset>
+        <button onclick="sort()" class="border rounded-xl p-5 m-5 hover:bg-slate-100 transition-all">Filter results</button>
+    </div>
+
+    <table class="table-auto w-full" id="table">
+        <tr class="border-2">
+            <th>Kč/TB</th>
+            <th>Price</th>
+            <th>Capacity</th>
+            <th>RPM</th>
+            <th>Read speed</th>
+            <th>Write speed</th>
+            <th>Interface</th>
+            <th>Rating</th>
+            <th>Name</th>
+        </tr>
+
+        {% for i in disks %}
+        <tr class="border even:bg-slate-50 disk" rpm="{{i.rpm}}" interface="{{i.interface}}" capacity="{{i.capacity}}">
+            <td class="px-5 border">{{'{:.2f}'.format(i.price[0]/(i.capacity/1_000_000_000_000))}}</td>
+            <td class="px-5 border">{{i.price[0]}} Kč</td>
+            <td class="px-5 border">{{i.capacityRaw}}</td>
+            {% if not i.rpm is none %}
+            <td class="px-5 border">{{i.rpm}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.rspeed is none %}
+            <td class="px-5 border">{{i.rspeed}}/s</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.wspeed is none %}
+            <td class="px-5 border">{{i.wspeed}}/s</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.interface is none %}
+            <td class="px-5 border interface">{{i.interface}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.rating is none %}
+            <td class="px-5 border">{{i.rating}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            <td class="underline px-5"><a href="{{i.url}}">{{i.name}}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <span class="hidden"></span>
+</body>
+
+<script>
+    function sort() {
+        let rpmSelElements = document.getElementsByClassName("rpm-sel");
+        let rpmSel = [];
+        for (let index = 0; index < rpmSelElements.length; index++) {
+            const element = rpmSelElements[index];
+            if (element.checked) {
+                rpmSel.push(element.getAttribute("value"))
+            }
+        }
+
+        let interfaceSelElements = document.getElementsByClassName("interface-sel");
+        let interfaceSel = [];
+        for (let index = 0; index < interfaceSelElements.length; index++) {
+            const element = interfaceSelElements[index];
+            if (element.checked) {
+                interfaceSel.push(element.getAttribute("value"))
+            }
+        }
+
+        let min = 0;
+        let max = 15e15;
+        let minSet = document.getElementById("min")
+        let maxSet = document.getElementById("max")
+
+        if (minSet.value != "") {
+            min = minSet.value * 1_000_000_000_000
+        }
+        if (maxSet.value != "") {
+            max = maxSet.value * 1_000_000_000_000
+        }
+
+        let disks = document.getElementsByClassName("disk");
+        for (let index = 0; index < disks.length; index++) {
+            const element = disks[index];
+            let match = true;
+
+            if (rpmSel.length > 0) {
+                if (!rpmSel.includes(element.getAttribute("rpm"))) {
+                    match = false;
+                }
+            }
+            if (interfaceSel.length > 0) {
+                if (!interfaceSel.includes(element.getAttribute("interface"))) {
+                    match = false;
+                }
+            }
+            if (element.getAttribute("capacity") < min) {
+                match = false;
+            }
+            if (element.getAttribute("capacity") > max) {
+                match = false;
+            }
+
+            if (match) {
+                element.classList.remove("hidden");
+            } else {
+                element.classList.add("hidden")
+            }
+        }
+    }
+</script>
+
+</html>
