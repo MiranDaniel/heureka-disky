@@ -3,3 +3,4 @@ requests
 requests-cache
 beautifulsoup4
 jinja2
+datasize
