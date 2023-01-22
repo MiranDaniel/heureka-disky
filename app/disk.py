@@ -4,6 +4,7 @@ class Disk:
         self.rating = None
         self.interface = None
         self.capacity = None
+        self.capacityTb = None
         self.capacityRaw = None
         self.rpm = None
         self.size = None

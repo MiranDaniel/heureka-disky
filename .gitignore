@@ -1,5 +1,6 @@
 output.html
 .cache*
+.time
 
 __pycache__
 __pycache__/

@@ -16,9 +16,9 @@
 """
 
 import requests_cache
-from datetime import timedelta
+from datetime import timedelta, datetime
 from bs4 import BeautifulSoup
-from disk import Disk
+from .disk import Disk
 import pickle
 from datasize import DataSize
 import time
@@ -30,7 +30,8 @@ external = "https://pevne-disky-externi.heureka.cz/"
 pageQuery = "?f="
 sleep = 1 # seconds
 
-session = requests_cache.CachedSession(".cache", expire_after=timedelta(hours=0.1))
+session = requests_cache.CachedSession(".cache", expire_after=timedelta(hours=0.25))
+session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"})
 
 
 def humanReadable(size, precision=2):
@@ -115,7 +116,8 @@ def parsePage(page):
             continue
 
         disk.capacity = DataSize(disk.capacity.replace(" ", ""))
-        disk.capacityRaw = str(round(disk.capacity / 1_000_000_000_000, 2)) + " TB"
+        disk.capacityTb = round(disk.capacity / 1_000_000_000_000, 2)
+        disk.capacityRaw = str(disk.capacityTb) + " TB"
 
         if not disk.rspeed is None:
             disk.rspeed = humanReadable(
@@ -140,31 +142,37 @@ def parsePage(page):
     print(f"Found {len(disks)} disks!")
     return disks
 
+def scrape():
+    print(f"Scraping new data now.")
+    disks = []
 
-disks = []
+    for i in range(1, 1000):
+        page = getPage(internal, i)
+        if page == None:
+            break
 
-print("Tento program je rozšiřován v naději, že bude užitečný, avšak BEZ JAKÉKOLIV ZÁRUKY. Neposkytují se ani odvozené záruky PRODEJNOSTI anebo VHODNOSTI PRO URČITÝ ÚČEL. Další podrobnosti hledejte v Obecné veřejné licenci GNU.")
-
-for i in range(1, 1000):
-    page = getPage(internal, i)
-    if page == None:
-        break
-
-    result = parsePage(page)
-    if len(result) == 0:
-        break
-    disks += result
+        result = parsePage(page)
+        if len(result) == 0:
+            break
+        disks += result
 
 
-for i in range(1, 1000):
-    page = getPage(external, i)
-    if page == None:
-        break
+    for i in range(1, 1000):
+        page = getPage(external, i)
+        if page == None:
+            break
 
-    result = parsePage(page)
-    if len(result) == 0:
-        break
-    disks += result
+        result = parsePage(page)
+        if len(result) == 0:
+            break
+        disks += result
 
-with open(".cache.pickle", "wb+") as f:
-    pickle.dump(disks, f)
+    with open(".time", "wt+") as f:
+        f.write(f"{datetime.utcnow().isoformat()}")
+
+    with open(".cache.pickle", "wb+") as f:
+        pickle.dump(disks, f)
+
+    print("Done scraping!")
+
+    return disks

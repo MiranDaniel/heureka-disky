@@ -18,10 +18,13 @@ Inspirace z [diskprices.com](https://diskprices.com/) pro disky na Amazonu.
 - Instalace Pythonu, z repozitářů distribuce, wingetu nebo [www.python.org](https://www.python.org/)
 - `python3 -m pip3 install -r requirements.txt` pro instalaci balíčků
 
-## Použití
+## Running
 
-- `python3 scrape.py` načte všechny disky z Heuréky
-- `python3 export.py` exportuje data do souboru `output.html`
+`docker run -d -p 8080:8080 heureka-disky`
+
+## Building
+
+`docker build --tag heureka-disky .`
 
 ## Poznámky
 

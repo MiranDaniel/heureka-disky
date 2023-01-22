@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>heureka-disky</title>
+    <!--<script src="https://cdn.tailwindcss.com"></script>-->
+    <script src="/tailwind.css"></script>
+</head>
+
+<body>
+    <div class="flex flex-row w-full">
+        <div class="flex flex-col w-3/4">
+            <div class="flex flex-row w-full">
+                <fieldset class="border border-slate-300 p-3 w-full">
+                    <h2 class="font-bold">Interfaces</h2>
+                    <div class="flex flex-col gap-0 text-sm">
+                        {% for i in interfaces %}
+                            <label class="my-0 py-0">
+                                <input class="my-0 py-0 interface-sel" value="{{i}}"
+                                    type="checkbox" name="if"> {{i}}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                <fieldset class="border border-slate-300 p-3 w-full">
+                    <h2 class="font-bold">RPM</h2>
+                    <div class="flex flex-col gap-0 text-sm">
+                        {% for i in speed %}
+                            <label class="my-0 py-0"><input class="my-0 ml-1 py-0 rpm-sel" value="{{i}}" name="rpm" type="checkbox"> {{i}}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                <fieldset class="border border-slate-300 p-3 w-full">
+                    <h2 class="font-bold">Capacity (TB)</h2>
+                    <div class="flex flex-col gap-0 text-sm">
+                        <input class="border p-2" type="number" name="max" id="max" placeholder="Max capacity (TB)">
+                        <input class="border p-2" type="number" name="min" id="min" placeholder="Min capacity (TB)">
+                    </div>
+                    <hr class="my-5">
+                    <h2 class="font-bold">Search</h2>
+                    <div class="flex flex-col gap-0 text-sm">
+                        <input class="border p-2" type="text" name="search" id="search" placeholder="Search query">
+                    </div>
+                </fieldset>
+            </div>
+            <button onclick="prep()" class="border bg-orange-100 p-5 hover:bg-orange-200 transition-all">Filter
+                results</button>
+        </div>
+        <div class="p-5 flex flex-col bg-orange-50 w-1/4">
+            <h2 class="font-semibold text-2xl">heureka-disky</h2>
+            <a class="text-blue-800 underline" href="https://github.com/MiranDaniel/heureka-disky">MiranDaniel/heureka-disky</a>
+        
+            <div class="mt-auto">
+                <p>Last render: {{lastUpdate}}</p>
+                <p>Last scrape: {{lastScrape}}</p>
+                <p>Total filtered disks: {{results}}</p>
+                <p>Total disks: {{totalResults}}</p>
+            </div>
+
+            <div class="mt-auto flex flex-row items-center align-center justify-between">
+                <p class="align-center p-0">
+                    <small class="p-0">&copy; Copyright <a href="https://mirandaniel.com">MiranDaniel</a> 2022-2093</small>
+                </p>
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <table class="table-auto w-full" id="table">
+        <tr class="border-2">
+            <th>Kč/TB</th>
+            <th>Price</th>
+            <th>Capacity</th>
+            <th>RPM</th>
+            <th>Read speed</th>
+            <th>Write speed</th>
+            <th>Interface</th>
+            <th>Rating</th>
+            <th>Name</th>
+        </tr>
+
+        {% for i in disks %}
+        <tr class="border even:bg-slate-50 disk">
+            <td class="px-5 border">{{'{:.2f}'.format(i.price[0]/(i.capacity/1_000_000_000_000))}}</td>
+            <td class="px-5 border">{{i.price[0]}} Kč</td>
+            <td class="px-5 border">{{i.capacityRaw}}</td>
+            {% if not i.rpm is none %}
+            <td class="px-5 border">{{i.rpm}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.rspeed is none %}
+            <td class="px-5 border">{{i.rspeed}}/s</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.wspeed is none %}
+            <td class="px-5 border">{{i.wspeed}}/s</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.interface is none %}
+            <td class="px-5 border interface">{{i.interface}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            {% if not i.rating is none %}
+            <td class="px-5 border">{{i.rating}}</td>
+            {% else %}
+            <td class="px-5 border">?</td>
+            {% endif %}
+            <td class="underline px-5"><a href="{{i.url}}">{{i.name}}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <span class="hidden"></span>
+</body>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let interfaceSels = document.getElementsByClassName("interface-sel");
+    for(let i=0; i<interfaceSels.length; i++){
+        let element = interfaceSels[i];
+        if(urlParams.get("if").split(",").includes(element.value)){
+            element.checked = true;
+        }
+    }
+    let rpmSels = document.getElementsByClassName("rpm-sel");
+    for(let i=0; i<rpmSels.length; i++){
+        let element = rpmSels[i];
+        if(urlParams.get("rpm").split(",").includes(element.value)){
+            element.checked = true;
+        }
+    }
+    document.getElementById("min").value = urlParams.get("min");
+    document.getElementById("max").value = urlParams.get("max");
+    document.getElementById("search").value = urlParams.get("search");
+</script>
+
+<script>
+    let interfaceArg = [];
+    let rpmArg = [];
+
+    function prep(){
+        let interfaceSels = document.getElementsByClassName("interface-sel");
+        for(let i=0; i<interfaceSels.length; i++){
+            let element = interfaceSels[i];
+            if(element.checked){
+                interfaceArg.push(element.value)
+            }
+        }
+        let rpmSels = document.getElementsByClassName("rpm-sel");
+        for(let i=0; i<rpmSels.length; i++){
+            let element = rpmSels[i];
+            if(element.checked){
+                rpmArg.push(element.value)
+            }
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+
+        urlParams.set('if', interfaceArg.join(","));
+        urlParams.set('rpm', rpmArg.join(","));
+        urlParams.set('min', document.getElementById("min").value);
+        urlParams.set('max', document.getElementById("max").value);
+        urlParams.set('search', document.getElementById("search").value);
+        
+        window.location.search = urlParams;    
+    }
+</script>
+
+
+</html>
