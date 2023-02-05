@@ -18,18 +18,13 @@ Inspirace z [diskprices.com](https://diskprices.com/) pro disky na Amazonu.
 - Instalace Pythonu, z repozitářů distribuce, wingetu nebo [www.python.org](https://www.python.org/)
 - `python3 -m pip3 install -r requirements.txt` pro instalaci balíčků
 
-## Running
+## Spuštění
 
 `docker run -d -p 8080:8080 heureka-disky`
 
-## Building
+## Build
 
 `docker build --tag heureka-disky .`
-
-## Poznámky
-
-- Scraper bot má nastaven timeout jedné sekundy po načtení stánky, pokud program padá kvůli chybě [429](https://http.cat/429), nastavte v souboru `scrape.py` vyšší `sleep`.
-- Heuréka nemá veřejné API, program tedy načítá data ze stránek pro lidi, je tedy možnost že se program rozbije po redesignu Heuréky, v tom případě prosím, vytvořte issue.
 
 ## Licence
 
