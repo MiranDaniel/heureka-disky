@@ -1,4 +1,4 @@
-requests==2.28.2
+requests==2.31.0
 requests-cache==0.9.8
 beautifulsoup4==4.11.1
 flask==2.2.2
